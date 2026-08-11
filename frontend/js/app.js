@@ -130,18 +130,6 @@ class APEXApp {
 
     // Apply Scenario Data to Components
     this.applyAnalysisResult(scenario);
-
-    // Also attempt live backend call if online
-    window.apexApi.analyzeFrame(scenario.id, scenario.frame_index)
-      .then(realResult => {
-        if (realResult && realResult.track_condition) {
-          console.log('[APEX App] Live backend analysis returned:', realResult);
-          this.applyAnalysisResult(realResult);
-        }
-      })
-      .catch(err => {
-        console.log('[APEX App] Backend offline or using pre-computed scenario demo data:', err.message);
-      });
   }
 
   async handleFileUpload(file) {

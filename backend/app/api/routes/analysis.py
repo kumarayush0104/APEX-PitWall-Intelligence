@@ -146,6 +146,23 @@ async def analyze_frame(
                 "class_legend": result.visualization.class_legend,
                 "dimensions": {"width": result.visualization.original_width, "height": result.visualization.original_height},
             },
+            "sector_risk": {
+                "sector_1": {
+                    "risk_level": "CRITICAL" if result.condition.metrics.wetness_index > 0.7 else ("HIGH" if result.condition.metrics.wetness_index > 0.4 else ("MEDIUM" if result.condition.metrics.wetness_index > 0.2 else "LOW")),
+                    "grip_mu": round(max(0.15, 1.0 - result.condition.metrics.wetness_index * 0.7), 2),
+                    "water_depth_mm": round(result.condition.metrics.puddle_coverage_pct * 0.25, 1),
+                },
+                "sector_2": {
+                    "risk_level": "CRITICAL" if result.condition.metrics.wetness_index > 0.6 else ("HIGH" if result.condition.metrics.wetness_index > 0.35 else ("MEDIUM" if result.condition.metrics.wetness_index > 0.15 else "LOW")),
+                    "grip_mu": round(max(0.12, 1.0 - result.condition.metrics.wetness_index * 0.8), 2),
+                    "water_depth_mm": round(result.condition.metrics.puddle_coverage_pct * 0.28, 1),
+                },
+                "sector_3": {
+                    "risk_level": "CRITICAL" if result.condition.metrics.wetness_index > 0.8 else ("HIGH" if result.condition.metrics.wetness_index > 0.5 else ("MEDIUM" if result.condition.metrics.wetness_index > 0.25 else "LOW")),
+                    "grip_mu": round(max(0.18, 1.0 - result.condition.metrics.wetness_index * 0.65), 2),
+                    "water_depth_mm": round(result.condition.metrics.puddle_coverage_pct * 0.20, 1),
+                },
+            },
             "processing_time_ms": result.total_processing_time_ms,
         }
 
