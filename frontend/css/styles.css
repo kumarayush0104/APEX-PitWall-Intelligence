@@ -1,0 +1,675 @@
+/* =========================================================================
+   APEX PitWall Intelligence — Production Telemetry Design System
+   Style Specifications: Formula 1 Race Engineer Mission Control / Command Center
+   ========================================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+:root {
+  /* Core F1 Palette */
+  --bg-darkest:       #060709;
+  --bg-primary:       #0A0C10;
+  --bg-secondary:     #12151C;
+  --bg-panel:         #171B24;
+  --bg-card:          #1D222E;
+  --bg-hover:         #252C3D;
+
+  /* Accent Colors */
+  --accent-f1:        #FF1E00;
+  --accent-f1-glow:   rgba(255, 30, 0, 0.25);
+  --accent-cyan:      #00E5FF;
+  --accent-cyan-glow: rgba(0, 229, 255, 0.20);
+  
+  /* Compound Branding */
+  --tyre-soft:        #FF1E00;
+  --tyre-medium:      #FFD600;
+  --tyre-hard:        #FFFFFF;
+  --tyre-inter:       #00E676;
+  --tyre-wet:         #00B0FF;
+
+  /* Data & Risk Status */
+  --status-safe:      #00E676;
+  --status-warning:   #FF9100;
+  --status-danger:    #FF1744;
+  --status-info:      #2979FF;
+  --status-purple:    #D500F9;
+
+  /* Text Hierarchy */
+  --text-primary:     #F3F5F8;
+  --text-secondary:   #8C96A6;
+  --text-muted:       #515A6B;
+  --text-mono:        #A5F3FC;
+
+  /* Borders & Glassmorphism */
+  --border-subtle:    rgba(255, 255, 255, 0.07);
+  --border-strong:    rgba(255, 255, 255, 0.15);
+  --border-accent:    rgba(255, 30, 0, 0.4);
+  --glass-bg:         rgba(18, 21, 28, 0.75);
+  --glass-border:     rgba(255, 255, 255, 0.08);
+
+  /* Fonts */
+  --font-ui:          'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-data:        'JetBrains Mono', monospace;
+
+  /* Shadows */
+  --shadow-panel:     0 8px 32px rgba(0, 0, 0, 0.6);
+  --shadow-glow-red:  0 0 24px rgba(255, 30, 0, 0.35);
+  --shadow-glow-cyan: 0 0 24px rgba(0, 229, 255, 0.30);
+}
+
+/* Reset & Global Base */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  background-color: var(--bg-darkest);
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  line-height: 1.4;
+  overflow: hidden;
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--bg-card);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-f1);
+}
+
+/* Top Level App Layout */
+#app-root {
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Navigation Header */
+.telemetry-header {
+  height: 52px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  z-index: 100;
+}
+
+.brand-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 900;
+  font-size: 16px;
+  letter-spacing: 2px;
+  color: var(--text-primary);
+}
+
+.brand-logo span {
+  color: var(--accent-f1);
+}
+
+.brand-tag {
+  background: var(--accent-f1-glow);
+  color: var(--accent-f1);
+  border: 1px solid var(--accent-f1);
+  font-family: var(--font-data);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 3px;
+  letter-spacing: 1px;
+}
+
+.header-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.nav-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.nav-btn:hover {
+  color: var(--text-primary);
+  background: var(--bg-panel);
+}
+
+.nav-btn.active {
+  color: var(--text-primary);
+  background: var(--bg-card);
+  border-color: var(--border-strong);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.header-status-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-family: var(--font-data);
+  font-size: 11px;
+}
+
+.status-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--text-muted);
+}
+
+.status-dot.online {
+  background: var(--status-safe);
+  box-shadow: 0 0 8px var(--status-safe);
+}
+
+.status-dot.busy {
+  background: var(--accent-cyan);
+  box-shadow: 0 0 8px var(--accent-cyan);
+  animation: pulse 1s infinite alternate;
+}
+
+.status-dot.error {
+  background: var(--status-danger);
+  box-shadow: 0 0 8px var(--status-danger);
+}
+
+@keyframes pulse {
+  from { opacity: 0.4; }
+  to { opacity: 1; }
+}
+
+/* Demo Mode Preset Selector Bar */
+.demo-banner {
+  background: linear-gradient(90deg, #12151C 0%, #1A0B09 50%, #12151C 100%);
+  border-bottom: 1px solid var(--accent-f1-glow);
+  padding: 6px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+}
+
+.demo-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  color: var(--accent-f1);
+  letter-spacing: 0.5px;
+}
+
+.demo-presets {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.preset-btn {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  font-family: var(--font-data);
+  font-size: 11px;
+  padding: 4px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.preset-btn:hover {
+  border-color: var(--accent-f1);
+  background: var(--bg-hover);
+  transform: translateY(-1px);
+}
+
+.preset-btn.active {
+  background: var(--accent-f1);
+  color: #FFF;
+  border-color: var(--accent-f1);
+  box-shadow: var(--shadow-glow-red);
+}
+
+/* Main View Container */
+.main-viewport {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  background: var(--bg-primary);
+}
+
+.tab-view {
+  display: none;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 12px;
+  overflow: hidden;
+}
+
+.tab-view.active {
+  display: flex;
+}
+
+/* Command Center Grid Layout */
+.command-grid {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: 320px 1fr 360px;
+  grid-template-rows: 1fr;
+  gap: 12px;
+}
+
+/* Panel Containers */
+.telemetry-panel {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: var(--shadow-panel);
+}
+
+.panel-header {
+  height: 36px;
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.panel-header-icon {
+  color: var(--accent-f1);
+  margin-right: 6px;
+}
+
+.panel-body {
+  flex: 1;
+  padding: 12px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Specific Panel Components */
+/* Left Column: Grip & Sectors */
+.left-col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Middle Column: Viewport & Telemetry Curve */
+.mid-col {
+  display: grid;
+  grid-template-rows: 1fr 220px;
+  gap: 12px;
+}
+
+/* Right Column: AI Rationale & Strategy */
+.right-col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Visualizer Container */
+.visualizer-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: #000;
+  border-radius: 6px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.visualizer-canvas-container {
+  position: relative;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.visualizer-img {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.visualizer-overlay-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* Canvas Mode Switcher Bar */
+.layer-controls {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(10, 12, 16, 0.85);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border-strong);
+  border-radius: 30px;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  z-index: 10;
+}
+
+.layer-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-family: var(--font-data);
+  font-size: 11px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.layer-btn.active {
+  background: var(--accent-f1);
+  color: #FFF;
+  font-weight: 700;
+}
+
+/* Grip Gauge Card */
+.grip-gauge-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  position: relative;
+}
+
+.grip-gauge-value {
+  font-family: var(--font-data);
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-top: -20px;
+}
+
+.grip-gauge-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Strategy Action Card */
+.strategy-card {
+  background: var(--bg-panel);
+  border-left: 4px solid var(--accent-f1);
+  border-radius: 4px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: var(--shadow-panel);
+}
+
+.strategy-compound-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.compound-badge {
+  font-family: var(--font-data);
+  font-size: 13px;
+  font-weight: 900;
+  padding: 4px 10px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #000;
+}
+
+.compound-badge.SOFT { background: var(--tyre-soft); color: #FFF; }
+.compound-badge.MEDIUM { background: var(--tyre-medium); }
+.compound-badge.HARD { background: var(--tyre-hard); }
+.compound-badge.INTERMEDIATE { background: var(--tyre-inter); }
+.compound-badge.WET { background: var(--tyre-wet); color: #FFF; }
+
+.priority-tag {
+  font-family: var(--font-data);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+.priority-tag.CRITICAL { background: rgba(255,23,68,0.2); color: var(--status-danger); border: 1px solid var(--status-danger); }
+.priority-tag.HIGH { background: rgba(255,145,0,0.2); color: var(--status-warning); border: 1px solid var(--status-warning); }
+.priority-tag.MONITOR { background: rgba(0,230,118,0.2); color: var(--status-safe); border: 1px solid var(--status-safe); }
+
+.strategy-metric-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.metric-stat-box {
+  background: var(--bg-secondary);
+  padding: 6px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--border-subtle);
+}
+
+.stat-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.stat-value {
+  font-family: var(--font-data);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-mono);
+}
+
+/* AI Explanation Box */
+.ai-summary-box {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-primary);
+}
+
+.ai-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 700;
+  color: var(--accent-cyan);
+}
+
+.ai-badge {
+  font-family: var(--font-data);
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: rgba(0, 229, 255, 0.15);
+  color: var(--accent-cyan);
+  border: 1px solid var(--accent-cyan);
+}
+
+/* Key Observation Bullets */
+.evidence-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.evidence-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: var(--bg-card);
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  border-left: 3px solid var(--accent-cyan);
+}
+
+/* Session History Table */
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-data);
+  font-size: 11px;
+}
+
+.history-table th, .history-table td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.history-table th {
+  background: var(--bg-panel);
+  color: var(--text-secondary);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.history-table tr:hover {
+  background: var(--bg-hover);
+  cursor: pointer;
+}
+
+/* Upload Dropzone */
+.dropzone {
+  border: 2px dashed var(--border-strong);
+  border-radius: 8px;
+  padding: 40px;
+  text-align: center;
+  background: var(--bg-panel);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.dropzone:hover, .dropzone.dragover {
+  border-color: var(--accent-f1);
+  background: var(--bg-hover);
+  box-shadow: var(--shadow-glow-red);
+}
+
+.dropzone-icon {
+  font-size: 42px;
+  color: var(--accent-f1);
+}
+
+/* Report Printable Container */
+.report-paper {
+  background: #0D0F14;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  padding: 24px;
+  max-width: 900px;
+  margin: 0 auto;
+  overflow-y: auto;
+  box-shadow: var(--shadow-panel);
+}
+
+@media print {
+  body {
+    background: #FFF !important;
+    color: #000 !important;
+  }
+  .telemetry-header, .demo-banner {
+    display: none !important;
+  }
+  .report-paper {
+    background: #FFF !important;
+    color: #000 !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+}

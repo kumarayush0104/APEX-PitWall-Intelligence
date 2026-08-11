@@ -1,0 +1,64 @@
+# =============================================================================
+# PitWall Intelligence — .gitignore
+# =============================================================================
+
+# ── Python ────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.pyd
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# ── Virtual Environments ──────────────────────────────────────────────────────
+venv/
+.venv/
+env/
+.env/
+
+# ── Environment / Secrets ─────────────────────────────────────────────────────
+.env
+*.env
+!.env.example     # Keep the example file
+
+# ── HuggingFace Model Cache ───────────────────────────────────────────────────
+.hf_cache/
+*.safetensors
+*.bin
+*.pt
+*.pth
+
+# ── Logs ──────────────────────────────────────────────────────────────────────
+logs/
+*.log
+
+# ── Demo clips (large binary files — managed separately) ──────────────────────
+demo_clips/
+!demo_clips/.gitkeep
+
+# ── Testing ───────────────────────────────────────────────────────────────────
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# ── IDE ───────────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# ── Docker ────────────────────────────────────────────────────────────────────
+*.dockerignore
+
+# ── Temporary ─────────────────────────────────────────────────────────────────
+tmp/
+temp/
+scratch/
+*.tmp

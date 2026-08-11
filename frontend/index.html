@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="APEX PitWall Intelligence — Formula 1 AI Race Engineer Command Center & Track Wetness Strategy Engine." />
+  <meta name="theme-color" content="#060709" />
+  <title>APEX | F1 Race Engineer Command Center</title>
+
+  <!-- Google Fonts: Inter (UI) + JetBrains Mono (Telemetry) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- APEX Core CSS -->
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+  <div id="app-root">
+
+    <!-- Top Telemetry Navigation Header -->
+    <header class="telemetry-header">
+      <div class="brand-section">
+        <div class="brand-logo">
+          APEX <span>PITWALL</span>
+        </div>
+        <div class="brand-tag">INTELLIGENCE</div>
+        <div id="circuit-name-display" style="font-family:var(--font-data); font-size:11px; font-weight:700; color:var(--text-mono); background:var(--bg-panel); padding:3px 8px; border-radius:3px; border:1px solid var(--border-subtle);">
+          🇧🇪 Circuit de Spa-Francorchamps
+        </div>
+      </div>
+
+      <!-- Navigation Bar -->
+      <nav class="header-nav">
+        <button class="nav-btn active" data-tab="command">📊 COMMAND CENTER</button>
+        <button class="nav-btn" data-tab="upload">📁 UPLOAD & STREAM</button>
+        <button class="nav-btn" data-tab="history">📜 SESSION HISTORY</button>
+        <button class="nav-btn" data-tab="reports">📋 STRATEGY REPORT</button>
+        <button class="nav-btn" data-tab="health">⚡ SYSTEM HEALTH</button>
+      </nav>
+
+      <!-- Right Telemetry & Status Bar -->
+      <div class="header-status-bar">
+        <div class="status-pill">
+          <span style="color:var(--text-muted);">SESSION:</span>
+          <span id="session-clock-display" style="color:#FFF; font-weight:700;">00:00:00</span>
+        </div>
+        <div class="status-pill">
+          <span style="color:var(--text-muted);">TRACK:</span>
+          <span id="header-condition-val" style="color:var(--accent-f1); font-weight:700;">FLOODED</span>
+        </div>
+        <div class="status-pill">
+          <span id="backend-status-pill" class="status-dot online"></span>
+          <span id="backend-version-display" style="color:var(--text-primary); font-weight:700;">v1.0.0 · CPU</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Demo Mode Presets Banner (Crucial for Judges) -->
+    <div class="demo-banner">
+      <div class="demo-title">
+        <span>⚡ JUDGE DEMO MODE:</span>
+        <span style="color:var(--text-secondary); font-weight:400;">Select built-in race scenario for instant analysis</span>
+      </div>
+      <div class="demo-presets">
+        <button class="preset-btn active" data-scenario="belgian_gp">🇧🇪 Belgian GP (Spa - Flooded)</button>
+        <button class="preset-btn" data-scenario="monaco_gp">🇲🇨 Monaco GP (Drying Line)</button>
+        <button class="preset-btn" data-scenario="silverstone_gp">🇬🇧 Silverstone (Sudden Shower)</button>
+        <button class="preset-btn" data-scenario="monza_gp">🇮🇹 Monza (Dry Evolution)</button>
+      </div>
+    </div>
+
+    <!-- Main Viewport Area -->
+    <main class="main-viewport">
+
+      <!-- View 1: Command Center -->
+      <div id="view-command" class="tab-view active">
+        <div class="command-grid">
+
+          <!-- Left Column: Grip Gauge & Sector Map -->
+          <div class="left-col">
+            <!-- Grip Gauge Panel -->
+            <div class="telemetry-panel" style="height:220px;">
+              <div class="panel-header">
+                <span><span class="panel-header-icon">⚡</span> SURFACE FRICTION (μ)</span>
+              </div>
+              <div class="panel-body grip-gauge-box">
+                <canvas id="grip-gauge-canvas"></canvas>
+              </div>
+            </div>
+
+            <!-- Sector Risk Map Panel -->
+            <div class="telemetry-panel" style="flex:1;">
+              <div class="panel-header">
+                <span><span class="panel-header-icon">🗺</span> SECTOR RISK MAP</span>
+              </div>
+              <div class="panel-body" id="sector-map-container">
+                <!-- SectorMap component injects SVG & sector cards here -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Middle Column: Track Canvas & Telemetry Curve -->
+          <div class="mid-col">
+            <!-- Track Vision Visualizer Panel -->
+            <div class="telemetry-panel" style="position:relative;">
+              <div class="panel-header">
+                <span><span class="panel-header-icon">👁</span> VISION PERCEPTION FEED (DINOv2 &amp; SegFormer)</span>
+              </div>
+              <div id="track-canvas-container" style="width:100%; height:calc(100% - 36px);">
+                <!-- TrackCanvas component injects multi-layer image viewer -->
+              </div>
+            </div>
+
+            <!-- Telemetry Timeline Chart Panel -->
+            <div class="telemetry-panel">
+              <div class="panel-header">
+                <span><span class="panel-header-icon">📈</span> TELEMETRY TIMELINE &amp; TYRE CROSSOVER THRESHOLDS</span>
+              </div>
+              <div class="panel-body" style="padding:0;">
+                <canvas id="telemetry-chart-canvas" style="width:100%; height:100%;"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Strategy Action & AI Rationale -->
+          <div class="right-col">
+            <!-- Recommendation Panel -->
+            <div class="telemetry-panel" style="height:210px;">
+              <div class="panel-header">
+                <span><span class="panel-header-icon">🏁</span> TYRE STRATEGY ACTION</span>
+              </div>
+              <div class="panel-body" id="recommendation-panel-container">
+                <!-- RecommendationPanel component injects tyre action card -->
+              </div>
+            </div>
+
+            <!-- AI Rationale & Visual Evidence Panel -->
+            <div class="telemetry-panel" style="flex:1;">
+              <div class="panel-header">
+                <span><span class="panel-header-icon">🧠</span> RACE ENGINEER AI RATIONALE</span>
+              </div>
+              <div class="panel-body" id="ai-explanation-container">
+                <!-- AIExplanation component injects engineer summary -->
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- View 2: Upload & Stream -->
+      <div id="view-upload" class="tab-view">
+        <div style="width:100%; max-width:800px; margin:40px auto; display:flex; flex-direction:column; gap:20px;">
+          <div class="telemetry-panel">
+            <div class="panel-header">
+              <span>UPLOAD TRACK FRAME FOR ANALYSIS</span>
+            </div>
+            <div class="panel-body">
+              <div class="dropzone" id="dropzone">
+                <div class="dropzone-icon">📷</div>
+                <div style="font-size:16px; font-weight:700; color:#FFF;">Drag &amp; Drop Track Image or Click to Select</div>
+                <div style="font-size:11px; color:var(--text-secondary);">Supports PNG, JPG, WEBP formats up to 2048px cap.</div>
+                <input type="file" id="file-input" accept="image/*" style="display:none;" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- View 3: Session History -->
+      <div id="view-history" class="tab-view">
+        <div class="telemetry-panel" style="width:100%; height:100%;">
+          <div class="panel-header">
+            <span>SESSION HISTORY AUDIT LOG</span>
+          </div>
+          <div class="panel-body" id="history-table-container">
+            <!-- SessionHistory component injects table -->
+          </div>
+        </div>
+      </div>
+
+      <!-- View 4: Strategy Report -->
+      <div id="view-reports" class="tab-view" style="overflow-y:auto;">
+        <div id="report-paper-container" style="width:100%;">
+          <!-- ReportGenerator component injects PDF paper layout -->
+        </div>
+      </div>
+
+      <!-- View 5: System Health -->
+      <div id="view-health" class="tab-view" style="overflow-y:auto;">
+        <div id="health-monitor-container" style="width:100%;">
+          <!-- HealthMonitor component injects hardware status -->
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- APEX JS Modules -->
+  <script src="js/demo_data.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/components/grip_gauge.js"></script>
+  <script src="js/components/sector_map.js"></script>
+  <script src="js/components/track_canvas.js"></script>
+  <script src="js/components/telemetry_chart.js"></script>
+  <script src="js/components/recommendation_panel.js"></script>
+  <script src="js/components/ai_explanation.js"></script>
+  <script src="js/components/session_history.js"></script>
+  <script src="js/components/report_generator.js"></script>
+  <script src="js/components/health_monitor.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>

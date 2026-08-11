@@ -1,0 +1,68 @@
+# =============================================================================
+# PitWall Intelligence — Python Dependencies
+# =============================================================================
+#
+# IMPORTANT: Install PyTorch FIRST, SEPARATELY, with the correct index URL.
+# PyTorch is not listed here because the install URL differs between CPU/GPU.
+#
+# ── CPU-only (recommended for HP laptop / 8 GB RAM development) ──────────────
+#
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+#
+# ── NVIDIA GPU (CUDA 12.1) ────────────────────────────────────────────────────
+#
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
+#
+# ── Then install everything else ─────────────────────────────────────────────
+#
+#   pip install -r requirements.txt
+#
+# Or use the convenience scripts:
+#   Windows CPU:  scripts\install_cpu.bat
+#   Linux CPU:    bash scripts/install_cpu.sh
+#
+# =============================================================================
+
+# ── Web Framework ─────────────────────────────────────────────────────────────
+fastapi>=0.110.0,<1.0.0
+uvicorn[standard]>=0.27.0
+python-multipart>=0.0.9     # Required for file upload parsing
+websockets>=12.0            # WebSocket support
+
+# ── Configuration ─────────────────────────────────────────────────────────────
+pydantic>=2.6.0,<3.0.0
+pydantic-settings>=2.2.0
+python-dotenv>=1.0.0
+
+# ── Logging ───────────────────────────────────────────────────────────────────
+loguru>=0.7.2
+
+# ── HuggingFace AI Stack ──────────────────────────────────────────────────────
+# (torch / torchvision installed separately — see header)
+transformers>=4.40.0,<5.0.0
+huggingface-hub>=0.22.0
+accelerate>=0.28.0          # Efficient model loading (device_map, dtype)
+safetensors>=0.4.3          # Faster / safer model weight format
+tokenizers>=0.19.0          # Tokeniser library used by transformers
+
+# ── Computer Vision ───────────────────────────────────────────────────────────
+Pillow>=10.2.0
+opencv-python-headless>=4.9.0  # Headless — no GUI deps (critical for server)
+numpy>=1.26.0,<2.0.0            # Pin below 2.0 for torch compat
+
+# ── Scientific Computing ──────────────────────────────────────────────────────
+scipy>=1.12.0               # Linear regression, statistics for temporal layer
+
+# ── Async HTTP Client ─────────────────────────────────────────────────────────
+httpx>=0.27.0               # Used for HF Inference API + weather API calls
+aiofiles>=23.2.1            # Async file I/O for large uploads
+
+# ── Caching ───────────────────────────────────────────────────────────────────
+cachetools>=5.3.3           # LRU cache for VLM explanations
+
+# ── System Monitoring ─────────────────────────────────────────────────────────
+psutil>=5.9.8               # RAM usage reporting in health endpoint
+
+# ── Testing ───────────────────────────────────────────────────────────────────
+pytest>=8.0.0
+pytest-asyncio>=0.23.0

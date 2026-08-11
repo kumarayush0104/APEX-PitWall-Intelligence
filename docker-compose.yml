@@ -1,0 +1,80 @@
+# =============================================================================
+# PitWall Intelligence — docker-compose.yml
+#
+# Services:
+#   backend   — FastAPI APEX inference server (CPU-first)
+#   frontend  — Nginx serving the static frontend
+#
+# Usage:
+#   docker compose up                 # Start both services
+#   docker compose up --build         # Rebuild and start
+#   docker compose logs -f backend    # Stream backend logs
+#
+# Environment:
+#   Copy backend/.env.example to backend/.env and fill in your values.
+#   The HF_TOKEN and other secrets are read from backend/.env.
+#
+# Volume mounts:
+#   hf_model_cache  — Persists downloaded HuggingFace models between restarts.
+#                     Pre-populate by running: docker compose run --rm backend
+#                       python scripts/download_models.py
+#   demo_clips      — Mount your demo frame directories here.
+# =============================================================================
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: runtime
+    container_name: pitwall-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      # Override per-container — sourced from backend/.env
+      HOST: "0.0.0.0"
+      PORT: "8000"
+      # Pass HF token from host environment (do NOT hardcode secrets here)
+      HF_TOKEN: "${HF_TOKEN:-}"
+    env_file:
+      - ./backend/.env
+    volumes:
+      # Persist model cache across container restarts
+      - hf_model_cache:/app/.hf_cache
+      # Demo scenarios
+      - ./backend/demo_clips:/app/demo_clips:ro
+      # Application logs
+      - ./backend/logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 6G          # Hard cap — protects host OS on 8 GB machine
+          cpus: "2.0"
+
+  frontend:
+    image: nginx:alpine
+    container_name: pitwall-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    volumes:
+      - ./frontend:/usr/share/nginx/html:ro
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  hf_model_cache:
+    name: pitwall-hf-cache
+
+networks:
+  default:
+    name: pitwall-network
