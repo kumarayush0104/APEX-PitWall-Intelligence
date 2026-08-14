@@ -370,8 +370,8 @@ This project is submitted as a hackathon entry. All rights reserved by the autho
 
 ---
 
-## Author
+## Authors
 
-**Yuvraj Goyal**  
-GitHub: [kumarayush0104](https://github.com/kumarayush0104)  
+**Ayush Kumar**  
+**Shyam Kumar**  
 Repository: [APEX-PitWall-Intelligence](https://github.com/kumarayush0104/APEX-PitWall-Intelligence)
