@@ -1,215 +1,377 @@
-# PitWall Intelligence
-### APEX — Adaptive Perception & Evolution eXplainer
+# APEX PitWall Intelligence
 
-> AI-powered race track condition analysis and tyre strategy engine.
+**Adaptive Perception and Evolution eXplainer for Formula 1 Track Condition Analysis**
+
+APEX PitWall Intelligence is an AI-powered race engineering decision support system that performs real-time track condition analysis and tyre strategy recommendation from camera footage. The system replicates the visual intelligence of a senior race engineer — translating raw visual input from a track camera into structured, actionable strategy decisions backed by deep learning, temporal reasoning, and explainable AI.
 
 ---
 
-## Quick Start (Development — CPU-only, 8 GB RAM)
+## Overview
+
+In Formula 1, track condition assessment is one of the most consequential and time-pressured decisions a race engineer makes. A misjudged tyre call during a weather transition can cost multiple positions or end a race. APEX automates this decision loop by applying a multi-stage computer vision pipeline to any track-facing image or live camera feed.
+
+The system outputs:
+- A classified track condition (Dry, Damp, Wet, or Flooded) with confidence scores
+- A grip coefficient estimate derived from surface segmentation data
+- Per-sector risk assessment across three track sectors
+- A tyre compound recommendation with engineering rationale
+- Temporal trend analysis across a rolling 30-frame window
+- Structured or VLM-generated explanation in race engineer language
+- Segmentation overlays, DINOv2 attention heatmaps, and visualization bundles
+
+---
+
+## Technical Architecture
+
+```
+Image Upload / Live Camera Frame
+            |
+            v
+    Image Preprocessing
+    (safety downscaling, EXIF correction, format normalization)
+            |
+            v
+    Perception Layer
+    |-- DINOv2 ViT-B/14       (self-supervised visual features + attention maps)
+    |-- SegFormer-B2           (semantic segmentation: road surface classification)
+    `-- CLIP ViT-L/14          (zero-shot condition cross-validation)
+            |
+            v
+    Condition Classifier
+    (wetness index, puddle coverage, grip coefficient, tyre recommendation)
+            |
+            v
+    Temporal Reasoner
+    (rolling 30-frame window, EWMA, trend detection, crossover alerts)
+            |
+            v
+    Explainability Engine
+    (structured template or Qwen2-VL-7B via HuggingFace Inference API)
+            |
+            v
+    Visualization Bundle
+    (segmentation overlay, attention heatmap, class legend)
+            |
+            v
+    REST API Response  /  WebSocket Stream Frame
+            |
+            v
+    Frontend Telemetry Command Center
+    (Grip Gauge, Sector Map, Track Vision, Telemetry Chart, Strategy Panel)
+```
+
+### Model Stack
+
+| Model | Provider | Role |
+|---|---|---|
+| `facebook/dinov2-base` | HuggingFace | Feature extraction, attention visualization |
+| `nvidia/segformer-b2-finetuned-cityscapes-1024-1024` | HuggingFace | Pixel-level road surface segmentation |
+| `openai/clip-vit-large-patch14` | HuggingFace | Zero-shot condition classification |
+| `Qwen/Qwen2-VL-7B-Instruct` | HuggingFace Inference API | Natural language engineering rationale (optional) |
+
+All models run sequentially under a single-lock Model Registry to enforce strict RAM budget compliance on CPU-only hardware.
+
+---
+
+## Project Structure
+
+```
+APEX-PitWall-Intelligence/
+|-- backend/
+|   |-- app/
+|   |   |-- api/
+|   |   |   |-- dependencies.py       Dependency injection (registry, settings)
+|   |   |   `-- routes/
+|   |   |       |-- analysis.py       POST /api/v1/analyze, WS /api/v1/stream, GET /api/v1/history
+|   |   |       `-- health.py         GET /health, GET /api/v1/health, POST /api/v1/warmup
+|   |   |-- core/
+|   |   |   |-- pipeline.py           Unified orchestrator (all 7 stages)
+|   |   |   |-- perception.py         DINOv2 + SegFormer + CLIP inference
+|   |   |   |-- condition_classifier.py  Wetness metrics, grip estimation, tyre recommendation
+|   |   |   |-- temporal_reasoner.py  Rolling window, trend, crossover alerts
+|   |   |   `-- explainability.py     Structured + VLM explanation engine
+|   |   |-- models/
+|   |   |   |-- registry.py           Thread-safe lazy model loader (RLock, sequential)
+|   |   |   `-- schemas.py            All Pydantic request/response types
+|   |   |-- utils/
+|   |   |   |-- image_utils.py        Multi-format image loading and preprocessing
+|   |   |   |-- visualization.py      Segmentation overlays, attention heatmaps
+|   |   |   `-- logging_config.py     Loguru structured logging
+|   |   |-- config.py                 Pydantic settings (CPU-first, RAM-aware)
+|   |   `-- main.py                   FastAPI factory, lifespan, middleware
+|   |-- scripts/
+|   |   |-- verify_setup.py           Pre-flight hardware and dependency check
+|   |   `-- download_models.py        One-time model pre-download utility
+|   |-- tests/                        125-test pytest suite (unit + integration)
+|   |-- requirements.txt
+|   |-- Dockerfile
+|   `-- .env.example
+|-- frontend/
+|   |-- index.html                    F1 telemetry command center UI
+|   |-- css/
+|   |   `-- styles.css                Design system (dark theme, glassmorphism)
+|   `-- js/
+|       |-- app.js                    Master controller, state management
+|       |-- api.js                    REST and WebSocket communication layer
+|       |-- demo_data.js              Pre-computed F1 race scenarios
+|       `-- components/
+|           |-- grip_gauge.js         Animated grip coefficient radial gauge
+|           |-- sector_map.js         Three-sector risk map with color coding
+|           |-- track_canvas.js       Segmentation overlay + attention heatmap viewer
+|           |-- telemetry_chart.js    Wetness and grip trend chart
+|           |-- recommendation_panel.js  Tyre strategy card with pit window alert
+|           |-- ai_explanation.js     Engineering rationale and key factors display
+|           |-- session_history.js    Analysis history table with replay
+|           |-- report_generator.js   Printable race strategy report
+|           `-- health_monitor.js     System health and model load status panel
+|-- docker-compose.yml
+|-- nginx.conf
+`-- README.md
+```
+
+---
+
+## Installation
+
+### Prerequisites
+
+- Python 3.10 or higher
+- 8 GB RAM minimum (16 GB recommended for comfort)
+- No GPU required — CPU-only inference is fully supported
+
+### Local Development Setup
 
 ```bash
-# 1. Create virtual environment
+# 1. Clone the repository
+git clone https://github.com/kumarayush0104/APEX-PitWall-Intelligence.git
+cd APEX-PitWall-Intelligence
+
+# 2. Create and activate a virtual environment
 cd backend
 python -m venv venv
-venv\Scripts\activate        # Windows
-# source venv/bin/activate   # Linux/macOS
 
-# 2. Install PyTorch (CPU build — avoids 2 GB CUDA download)
+# Windows
+venv\Scripts\activate
+
+# Linux / macOS
+source venv/bin/activate
+
+# 3. Install PyTorch (CPU build — avoids the 2 GB CUDA wheel)
 pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
 
-# 3. Install all other dependencies
+# 4. Install all remaining dependencies
 pip install -r requirements.txt
 
-# 4. Configure environment
+# 5. Configure environment variables
 copy .env.example .env
-# Edit .env — add your HF_TOKEN for VLM explanations
+# Edit .env and add your HF_TOKEN for VLM-generated explanations (optional)
 
-# 5. Verify setup
+# 6. Verify your hardware and installation
 python scripts/verify_setup.py
 
-# 6. Pre-download AI models (one-time, ~1.3 GB)
+# 7. Pre-download AI models (one-time, approximately 1.3 GB total)
 python scripts/download_models.py
 
-# 7. Start the backend
+# 8. Start the backend server
 uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
-# 8. Open frontend (in a separate terminal or browser)
-# Just open frontend/index.html in your browser, or:
-# python -m http.server 3000 --directory frontend
+# 9. Serve the frontend (separate terminal)
+python -m http.server 3000 --directory ../frontend
 ```
 
-Backend API docs: **http://localhost:8000/docs**  
-Health check: **http://localhost:8000/api/v1/health**
-
----
-
-## Architecture Overview
-
-```
-PitWall Intelligence / APEX
-├── backend/                    FastAPI inference server
-│   ├── app/
-│   │   ├── config.py           Pydantic settings (CPU-first defaults)
-│   │   ├── main.py             FastAPI app factory + lifespan
-│   │   ├── api/
-│   │   │   ├── routes/
-│   │   │   │   ├── health.py   /health, /api/v1/health, /api/v1/warmup
-│   │   │   │   ├── analysis.py POST /api/v1/analyze/image|video  (Module 14)
-│   │   │   │   ├── session.py  GET /api/v1/session/{id}          (Module 14)
-│   │   │   │   └── websocket.py WS /ws/{session_id}              (Module 14)
-│   │   │   └── dependencies.py DI: settings, model registry, session store
-│   │   ├── core/               APEX inference pipeline
-│   │   │   ├── pipeline.py     Master orchestrator               (Module 11)
-│   │   │   ├── perception.py   DINOv2 + SegFormer + CLIP         (Module 03)
-│   │   │   ├── temporal.py     Sliding window reasoning          (Module 07)
-│   │   │   ├── physics.py      Grip estimation + state machine   (Module 06)
-│   │   │   ├── recommender.py  Strategy recommendation engine    (Module 09)
-│   │   │   └── explainer.py    VLM + structured fallback         (Module 10)
-│   │   ├── models/
-│   │   │   ├── registry.py     Model lazy-loader                 (Module 01)
-│   │   │   └── schemas.py      All Pydantic request/response types
-│   │   ├── services/
-│   │   │   ├── session_store.py In-memory session state          (Module 12)
-│   │   │   ├── weather.py       OpenWeatherMap integration        (Module 15)
-│   │   │   └── video_processor.py Frame extraction pipeline      (Module 13)
-│   │   └── utils/
-│   │       ├── logging_config.py Loguru setup
-│   │       ├── image_utils.py    Preprocessing                   (Module 02)
-│   │       ├── visualization.py  Heatmap + overlay generation    (Module 04)
-│   │       └── calibration.py    Confidence calibration          (Module 08)
-│   ├── scripts/
-│   │   ├── verify_setup.py     Pre-flight hardware check
-│   │   └── download_models.py  Model pre-download utility
-│   ├── tests/
-│   │   └── test_health.py      Module 00 test suite
-│   ├── demo_clips/             Pre-loaded race scenarios
-│   ├── requirements.txt        Python dependencies
-│   └── .env.example            Configuration template
-├── frontend/
-│   └── index.html              Frontend (single HTML file during Module 00)
-├── docker-compose.yml
-├── nginx.conf
-└── README.md
-```
-
----
-
-## AI Pipeline (APEX)
-
-```
-Image / Video Frame
-        │
-        ▼
-┌─────────────────────────────────────────┐
-│  Stage 1: Perception Layer              │
-│  ├─ DINOv2 ViT-B/14   (features)       │  facebook/dinov2-base
-│  ├─ SegFormer-B2       (segmentation)  │  nvidia/segformer-b2-cityscapes
-│  └─ CLIP ViT-L/14     (cross-valid.)  │  openai/clip-vit-large-patch14
-└─────────────────────┬───────────────────┘
-                      │
-                      ▼
-┌─────────────────────────────────────────┐
-│  Stage 2: Surface Feature Extraction   │
-│  wet_pixel_ratio, rubber_line_pct,      │
-│  puddle_count, reflectance_score, …    │
-└─────────────────────┬───────────────────┘
-                      │
-                      ▼
-┌─────────────────────────────────────────┐
-│  Stage 3: Physics & State Machine      │
-│  μ̂ (grip coefficient) estimation       │
-│  ConditionState: WET_SEVERE → DRY_EV.  │
-└─────────────────────┬───────────────────┘
-                      │
-                      ▼
-┌─────────────────────────────────────────┐
-│  Stage 4: Temporal Reasoning           │
-│  Sliding window N=8 frames             │
-│  drying_rate (Δμ/frame), EWMA, forecast│
-└─────────────────────┬───────────────────┘
-                      │
-                      ▼
-┌─────────────────────────────────────────┐
-│  Stage 5: Recommendation Engine        │
-│  IMMEDIATE / HIGH / MONITOR / HOLD /   │
-│  ABORT  +  evidence + tyre delta       │
-└─────────────────────┬───────────────────┘
-                      │
-                      ▼
-┌─────────────────────────────────────────┐
-│  Stage 6: Explainability               │
-│  Qwen2-VL-7B (HF API) OR              │  Qwen/Qwen2-VL-7B-Instruct
-│  Structured template fallback          │
-└─────────────────────┬───────────────────┘
-                      │
-                      ▼
-              APEXResult JSON
-```
-
----
-
-## Hardware Requirements
-
-| Component | Minimum (Demo) | Recommended |
-|---|---|---|
-| RAM | 8 GB | 16 GB |
-| CPU | 4 cores (2014+) | 8+ cores |
-| GPU | Not required | NVIDIA 6+ GB VRAM |
-| Disk | 4 GB free | 10 GB free |
-| Python | 3.10+ | 3.11 |
-
-**CPU-only mode is fully supported.** Inference is slower (~5–10 s/frame vs. ~1 s on GPU) but all features work. The VLM uses the HuggingFace Inference API and requires no local GPU.
-
----
-
-## Configuration
-
-Copy `backend/.env.example` to `backend/.env` and configure:
-
-| Variable | Default | Notes |
-|---|---|---|
-| `HF_TOKEN` | _(empty)_ | Get at huggingface.co/settings/tokens |
-| `VLM_PROVIDER` | `api` | `api` recommended for 8 GB RAM |
-| `DEVICE` | `auto` | Auto-detects CUDA, falls back to CPU |
-| `MAX_RAM_GB` | `5.0` | Model budget (leave 3 GB for OS) |
-| `DEMO_MODE_ENABLED` | `true` | Pre-loaded race scenarios |
-| `WEATHER_ENABLED` | `false` | Requires `WEATHER_API_KEY` |
+**Frontend**: http://localhost:3000  
+**API Documentation**: http://localhost:8000/docs  
+**Health Check**: http://localhost:8000/api/v1/health
 
 ---
 
 ## Docker Deployment
 
 ```bash
-# Build and start (CPU)
+# Build and start all services
 docker compose up --build
 
-# Access
-# Frontend: http://localhost:3000
-# Backend:  http://localhost:8000
-# API Docs: http://localhost:8000/docs
+# Stream backend logs
+docker compose logs -f backend
 ```
+
+| Service | URL |
+|---|---|
+| Frontend | http://localhost:3000 |
+| Backend API | http://localhost:8000 |
+| API Docs (Swagger) | http://localhost:8000/docs |
+
+---
+
+## API Reference
+
+### POST /api/v1/analyze
+
+Analyze a single track image and return the full APEX intelligence payload.
+
+**Request** (`multipart/form-data`):
+
+| Field | Type | Description |
+|---|---|---|
+| `file` | File | JPEG, PNG, or WebP image |
+| `image_base64` | string | Base64-encoded image (alternative to file) |
+| `frame_index` | integer | Sequential frame number |
+| `generate_visualizations` | boolean | Include overlay and heatmap in response |
+
+**Response**:
+
+```json
+{
+  "frame_index": 42,
+  "track_condition": "WET",
+  "metrics": {
+    "wetness_index": 0.71,
+    "puddle_coverage_pct": 18.4,
+    "grip_mu": 0.38,
+    "clip_wet_confidence": 0.89
+  },
+  "tyre_recommendation": {
+    "compound": "INTERMEDIATE",
+    "confidence": 0.87,
+    "pit_window_open": true,
+    "reasoning": "..."
+  },
+  "temporal_analysis": {
+    "trend": "DRYING",
+    "volatility": "MEDIUM",
+    "tyre_window_alert": { "alert_active": true, "message": "..." }
+  },
+  "sector_risk": {
+    "sector_1": { "risk_level": "HIGH", "grip_mu": 0.41 },
+    "sector_2": { "risk_level": "MEDIUM", "grip_mu": 0.48 },
+    "sector_3": { "risk_level": "HIGH", "grip_mu": 0.38 }
+  },
+  "explainability": {
+    "headline": "DRYING RACING LINE DETECTED — INTERMEDIATE WINDOW OPEN",
+    "detailed_summary": "...",
+    "key_factors": [...]
+  },
+  "visualization": {
+    "overlay": "<base64>",
+    "segmentation_mask": "<base64>",
+    "attention_heatmap": "<base64>"
+  }
+}
+```
+
+### GET /api/v1/history
+
+Returns the last 20 analysis results from the in-memory buffer.
+
+### WebSocket /api/v1/stream
+
+Live frame streaming endpoint. Send frames as JSON:
+
+```json
+{ "image": "data:image/jpeg;base64,..." }
+```
+
+Receive structured telemetry JSON for each frame in real time.
+
+### GET /health
+
+Liveness probe. Returns `200 OK` immediately. Used by Docker HEALTHCHECK.
+
+### GET /api/v1/health
+
+Detailed system diagnostics including model load status, hardware info, RAM usage, and service availability.
+
+---
+
+## Configuration Reference
+
+Copy `backend/.env.example` to `backend/.env` and adjust as needed.
+
+| Variable | Default | Description |
+|---|---|---|
+| `HF_TOKEN` | (empty) | HuggingFace token for VLM API and gated models |
+| `VLM_ENABLED` | `true` | Enable/disable LLM-generated explanations |
+| `VLM_PROVIDER` | `api` | `api` (HF Inference API) or `local` (not recommended on 8 GB) |
+| `DEVICE` | `auto` | `auto`, `cpu`, or `cuda` |
+| `MAX_RAM_GB` | `5.0` | Model memory budget in GB |
+| `DEMO_MODE_ENABLED` | `true` | Enable pre-loaded race scenario data |
+| `WEATHER_ENABLED` | `false` | OpenWeatherMap integration (requires `WEATHER_API_KEY`) |
+| `CORS_ALLOW_ALL` | `true` | Permissive CORS for local development |
+
+---
+
+## Hardware Requirements
+
+| Component | Minimum | Recommended |
+|---|---|---|
+| RAM | 8 GB | 16 GB |
+| CPU | 4 cores | 8 cores |
+| GPU | Not required | NVIDIA with 6+ GB VRAM |
+| Storage | 4 GB free | 10 GB free |
+| Python | 3.10 | 3.11 |
+
+CPU-only inference is fully supported. Frame analysis takes approximately 5–10 seconds per frame on CPU versus approximately 1 second on a mid-range GPU. The VLM explanation layer uses the HuggingFace Inference API and requires no local GPU regardless of mode.
+
+---
+
+## Test Suite
+
+```bash
+cd backend
+
+# Run all tests except model download integration tests
+pytest tests/ --ignore=tests/test_registry.py -v
+
+# Run the complete suite including registry tests (requires downloaded models)
+pytest tests/ -v
+```
+
+**Current status: 125 tests passing, 2 skipped (model download integration tests).**
+
+Test coverage spans: API routes, image preprocessing, perception layer, condition classification, temporal reasoning, visualization engine, explainability engine, pipeline orchestration, and system health endpoints.
+
+---
+
+## Demo Scenarios
+
+Four pre-computed F1 race scenarios are bundled for instant demonstration without requiring a connected backend:
+
+| Scenario | Circuit | Condition | Strategy |
+|---|---|---|---|
+| Belgian GP | Circuit de Spa-Francorchamps | Flooded | Full Wet — Box immediately |
+| Monaco GP | Circuit de Monaco | Drying line | Intermediate — Window open |
+| British GP | Silverstone Circuit | Sudden shower | Wet — Crossover imminent |
+| Italian GP | Autodromo Nazionale Monza | Dry evolution | Soft — Optimal stint |
 
 ---
 
 ## Implementation Status
 
-| Module | Description | Status |
+| Module | Component | Status |
 |---|---|---|
-| M00 | Project scaffold + config + health | ✅ Complete |
-| M01 | Model Registry (lazy loading) | ⬜ Next |
-| M02 | Image preprocessing | ⬜ Pending |
-| M03 | Perception layer | ⬜ Pending |
-| M04 | Visualisation engine | ⬜ Pending |
-| M05 | Surface feature extractor | ⬜ Pending |
-| M06 | Physics & state machine | ⬜ Pending |
-| M07 | Temporal reasoning | ⬜ Pending |
-| M08 | Confidence calibration | ⬜ Pending |
-| M09 | Recommendation engine | ⬜ Pending |
-| M10 | VLM explainability | ⬜ Pending |
-| M11 | APEX pipeline orchestrator | ⬜ Pending |
-| M12 | Session store | ⬜ Pending |
-| M13 | Video processor | ⬜ Pending |
-| M14 | FastAPI routes | ⬜ Pending |
-| M15 | Weather service | ⬜ Pending |
-| M16 | Frontend design system | ⬜ Pending |
-| M17–M25 | Frontend components | ⬜ Pending |
+| Model Registry | Thread-safe lazy loader with RLock and RAM budget enforcement | Complete |
+| Image Preprocessing | Multi-format loading, EXIF correction, safety downscaling | Complete |
+| Perception Layer | DINOv2 feature extraction, SegFormer segmentation, CLIP zero-shot | Complete |
+| Visualization Engine | Segmentation overlays, attention heatmaps, base64 bundles | Complete |
+| Condition Classifier | Wetness metrics, grip estimation, tyre recommendation | Complete |
+| Temporal Reasoner | Rolling window, linear regression trend, crossover alerts | Complete |
+| Explainability Engine | Structured fallback and Qwen2-VL-7B via HF Inference API | Complete |
+| Unified Pipeline | Sequential 7-stage orchestrator with timing and logging | Complete |
+| REST API | POST analyze, GET history, GET health, POST warmup | Complete |
+| WebSocket Stream | Live frame ingestion with JSON payload parsing | Complete |
+| Frontend UI | F1 telemetry command center with 9 instrumentation components | Complete |
+| Docker Deployment | Multi-service compose with Nginx reverse proxy | Complete |
+
+---
+
+## License
+
+This project is submitted as a hackathon entry. All rights reserved by the author.
+
+---
+
+## Author
+
+**Yuvraj Goyal**  
+GitHub: [kumarayush0104](https://github.com/kumarayush0104)  
+Repository: [APEX-PitWall-Intelligence](https://github.com/kumarayush0104/APEX-PitWall-Intelligence)
