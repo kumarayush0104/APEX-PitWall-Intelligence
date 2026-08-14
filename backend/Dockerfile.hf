@@ -1,0 +1,62 @@
+# =============================================================================
+# APEX PitWall Intelligence — Hugging Face Spaces Dockerfile
+#
+# Hugging Face Spaces free CPU tier: 16 GB RAM, 2 vCPUs.
+# This is sufficient to run DINOv2 + SegFormer + CLIP (~2.5 GB total).
+#
+# HF Spaces requires the app to listen on port 7860.
+# =============================================================================
+
+FROM python:3.11-slim
+
+# System dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libglib2.0-0 \
+    libsm6 \
+    libxext6 \
+    libgomp1 \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Copy requirements and install dependencies
+COPY requirements.txt .
+
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir \
+        torch torchvision \
+        --index-url https://download.pytorch.org/whl/cpu && \
+    pip install --no-cache-dir -r requirements.txt
+
+# Copy application code
+COPY app/ app/
+COPY scripts/ scripts/
+COPY .env.example .env.example
+
+# Create HF cache directory
+RUN mkdir -p /app/.hf_cache /app/demo_clips /app/logs
+
+# Environment
+ENV PYTHONPATH=/app
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV HF_HOME=/app/.hf_cache
+ENV HF_HUB_CACHE=/app/.hf_cache/hub
+ENV TRANSFORMERS_CACHE=/app/.hf_cache/hub
+ENV TOKENIZERS_PARALLELISM=false
+
+# HF Spaces uses port 7860
+EXPOSE 7860
+
+HEALTHCHECK --interval=60s --timeout=15s --start-period=120s --retries=3 \
+    CMD curl -f http://localhost:7860/health || exit 1
+
+# Launch on port 7860 for HF Spaces
+CMD ["uvicorn", "app.main:app", \
+     "--host", "0.0.0.0", \
+     "--port", "7860", \
+     "--workers", "1", \
+     "--loop", "asyncio", \
+     "--log-level", "warning"]

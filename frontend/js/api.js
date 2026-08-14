@@ -11,9 +11,30 @@ class APEXApi {
   }
 
   detectBaseUrl() {
+    // Priority 1: User-configured URL stored in localStorage
+    // Set via browser console: localStorage.setItem('APEX_API_URL', 'https://your-backend.hf.space')
     const stored = localStorage.getItem('APEX_API_URL');
     if (stored) return stored;
-    if (window.location.port === '8000') return '';
+
+    const hostname = window.location.hostname;
+    const port = window.location.port;
+
+    // Priority 2: Running backend directly on port 8000 (dev mode, same origin)
+    if (port === '8000') return '';
+
+    // Priority 3: Running on GitHub Pages — point to HF Spaces backend
+    // Update APEX_HF_SPACE_URL below after deploying backend to Hugging Face Spaces
+    if (hostname.includes('github.io')) {
+      const hfUrl = 'https://kumarayush0104-apex-pitwall-intelligence.hf.space';
+      console.info(
+        '[APEX] Running on GitHub Pages. Backend URL set to HF Spaces:\n' +
+        hfUrl + '\n' +
+        'Override via: localStorage.setItem("APEX_API_URL", "your-backend-url")'
+      );
+      return hfUrl;
+    }
+
+    // Priority 4: Local development on any port
     return 'http://localhost:8000';
   }
 
