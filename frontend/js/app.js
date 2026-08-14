@@ -60,12 +60,30 @@ class APEXApp {
     // File Upload Handler
     const dropzone = document.getElementById('dropzone');
     const fileInput = document.getElementById('file-input');
+    const analyzeBtn = document.getElementById('analyze-btn');
+
+    let pendingFile = null;
+
+    const showFileIndicator = (file) => {
+      pendingFile = file;
+      const indicator = document.getElementById('selected-file-indicator');
+      const nameEl = document.getElementById('selected-file-name');
+      const sizeEl = document.getElementById('selected-file-size');
+      const badge = document.getElementById('upload-status-badge');
+      if (nameEl) nameEl.textContent = file.name;
+      if (sizeEl) sizeEl.textContent = `${(file.size / 1024).toFixed(1)} KB`;
+      if (indicator) indicator.style.display = 'flex';
+      if (badge) { badge.className = 'upload-status-badge idle'; badge.textContent = 'READY'; }
+      const errorBox = document.getElementById('upload-error-box');
+      if (errorBox) errorBox.style.display = 'none';
+    };
 
     if (dropzone && fileInput) {
       dropzone.addEventListener('click', () => fileInput.click());
+
       fileInput.addEventListener('change', (e) => {
         if (e.target.files && e.target.files[0]) {
-          this.handleFileUpload(e.target.files[0]);
+          showFileIndicator(e.target.files[0]);
         }
       });
 
@@ -82,7 +100,15 @@ class APEXApp {
         e.preventDefault();
         dropzone.classList.remove('dragover');
         if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-          this.handleFileUpload(e.dataTransfer.files[0]);
+          showFileIndicator(e.dataTransfer.files[0]);
+        }
+      });
+    }
+
+    if (analyzeBtn) {
+      analyzeBtn.addEventListener('click', () => {
+        if (pendingFile) {
+          this.handleFileUpload(pendingFile);
         }
       });
     }
@@ -126,26 +152,81 @@ class APEXApp {
 
     // Update Header Meta
     const circuitEl = document.getElementById('circuit-name-display');
-    if (circuitEl) circuitEl.textContent = `${scenario.flag} ${scenario.circuit}`;
+    if (circuitEl) circuitEl.textContent = scenario.circuit;
 
     // Apply Scenario Data to Components
     this.applyAnalysisResult(scenario);
   }
 
   async handleFileUpload(file) {
-    console.log('[APEX App] Uploading frame file:', file.name);
-    // Show spinner / loading status
-    const statusPill = document.getElementById('backend-status-text');
-    if (statusPill) statusPill.textContent = 'ANALYZING FRAME...';
+    if (!file) return;
+
+    // --- UI helpers ---
+    const badge = document.getElementById('upload-status-badge');
+    const selectedIndicator = document.getElementById('selected-file-indicator');
+    const progressBar = document.getElementById('upload-progress-bar');
+    const errorBox = document.getElementById('upload-error-box');
+    const progressLabel = document.getElementById('progress-label');
+    const analyzeBtn = document.getElementById('analyze-btn');
+    const statusDot = document.getElementById('backend-status-pill');
+
+    const setStatus = (state, text) => {
+      if (badge) { badge.className = `upload-status-badge ${state}`; badge.textContent = text; }
+    };
+
+    const setStep = (stepId) => {
+      ['step-preprocess','step-perception','step-classify','step-explain'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.toggle('active', el.id === stepId);
+      });
+    };
+
+    // --- Show progress UI ---
+    if (errorBox) errorBox.style.display = 'none';
+    if (selectedIndicator) selectedIndicator.style.display = 'none';
+    if (progressBar) progressBar.style.display = 'flex';
+    if (analyzeBtn) analyzeBtn.disabled = true;
+    if (statusDot) { statusDot.className = 'status-dot busy'; }
+    setStatus('analyzing', 'ANALYZING');
+    setStep('step-preprocess');
+    if (progressLabel) progressLabel.textContent = 'Preprocessing image...';
+
+    // Step simulation for UX feedback (actual processing is sequential on backend)
+    const stepTimer1 = setTimeout(() => { setStep('step-perception'); if (progressLabel) progressLabel.textContent = 'Running DINOv2 + SegFormer + CLIP...'; }, 1200);
+    const stepTimer2 = setTimeout(() => { setStep('step-classify'); if (progressLabel) progressLabel.textContent = 'Classifying track condition...'; }, 3000);
+    const stepTimer3 = setTimeout(() => { setStep('step-explain'); if (progressLabel) progressLabel.textContent = 'Generating engineering rationale...'; }, 5000);
 
     try {
       const result = await window.apexApi.analyzeFrame(file, Math.floor(Math.random() * 100));
+
+      clearTimeout(stepTimer1); clearTimeout(stepTimer2); clearTimeout(stepTimer3);
+
+      if (progressBar) progressBar.style.display = 'none';
+      setStatus('complete', 'COMPLETE');
+      if (statusDot) { statusDot.className = 'status-dot online'; }
+      if (analyzeBtn) analyzeBtn.disabled = false;
+
       this.applyAnalysisResult(result);
       this.switchView('command');
+
     } catch (err) {
-      alert(`Analysis failed: ${err.message}`);
-    } finally {
-      if (statusPill) statusPill.textContent = 'Backend Online';
+      clearTimeout(stepTimer1); clearTimeout(stepTimer2); clearTimeout(stepTimer3);
+
+      if (progressBar) progressBar.style.display = 'none';
+      setStatus('error', 'ERROR');
+      if (statusDot) { statusDot.className = 'status-dot error'; }
+      if (analyzeBtn) analyzeBtn.disabled = false;
+
+      const errMsg = document.getElementById('upload-error-msg');
+      if (errMsg) errMsg.textContent = err.message || 'Unknown error — check backend connection.';
+      if (errorBox) errorBox.style.display = 'flex';
+
+      // Restore dot after 4s
+      setTimeout(() => {
+        if (statusDot) statusDot.className = 'status-dot online';
+        setStatus('idle', 'READY');
+        if (selectedIndicator) selectedIndicator.style.display = 'flex';
+      }, 4000);
     }
   }
 

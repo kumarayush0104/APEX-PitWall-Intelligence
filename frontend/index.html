@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="APEX PitWall Intelligence — Formula 1 AI Race Engineer Command Center & Track Wetness Strategy Engine." />
+  <meta name="description" content="APEX PitWall Intelligence — Formula 1 AI Race Engineer Command Center and Track Condition Analysis System." />
   <meta name="theme-color" content="#060709" />
-  <title>APEX | F1 Race Engineer Command Center</title>
+  <title>APEX PitWall Intelligence | F1 Race Engineer Command Center</title>
 
   <!-- Google Fonts: Inter (UI) + JetBrains Mono (Telemetry) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -26,48 +26,48 @@
           APEX <span>PITWALL</span>
         </div>
         <div class="brand-tag">INTELLIGENCE</div>
-        <div id="circuit-name-display" style="font-family:var(--font-data); font-size:11px; font-weight:700; color:var(--text-mono); background:var(--bg-panel); padding:3px 8px; border-radius:3px; border:1px solid var(--border-subtle);">
-          🇧🇪 Circuit de Spa-Francorchamps
+        <div id="circuit-name-display" class="circuit-display">
+          Circuit de Spa-Francorchamps
         </div>
       </div>
 
       <!-- Navigation Bar -->
       <nav class="header-nav">
-        <button class="nav-btn active" data-tab="command">📊 COMMAND CENTER</button>
-        <button class="nav-btn" data-tab="upload">📁 UPLOAD & STREAM</button>
-        <button class="nav-btn" data-tab="history">📜 SESSION HISTORY</button>
-        <button class="nav-btn" data-tab="reports">📋 STRATEGY REPORT</button>
-        <button class="nav-btn" data-tab="health">⚡ SYSTEM HEALTH</button>
+        <button class="nav-btn active" data-tab="command">COMMAND CENTER</button>
+        <button class="nav-btn" data-tab="upload">FRAME ANALYSIS</button>
+        <button class="nav-btn" data-tab="history">SESSION HISTORY</button>
+        <button class="nav-btn" data-tab="reports">STRATEGY REPORT</button>
+        <button class="nav-btn" data-tab="health">SYSTEM HEALTH</button>
       </nav>
 
       <!-- Right Telemetry & Status Bar -->
       <div class="header-status-bar">
         <div class="status-pill">
-          <span style="color:var(--text-muted);">SESSION:</span>
-          <span id="session-clock-display" style="color:#FFF; font-weight:700;">00:00:00</span>
+          <span class="pill-label">SESSION</span>
+          <span id="session-clock-display" class="pill-value">00:00:00</span>
         </div>
         <div class="status-pill">
-          <span style="color:var(--text-muted);">TRACK:</span>
-          <span id="header-condition-val" style="color:var(--accent-f1); font-weight:700;">FLOODED</span>
+          <span class="pill-label">TRACK</span>
+          <span id="header-condition-val" class="pill-value condition-val">FLOODED</span>
         </div>
         <div class="status-pill">
           <span id="backend-status-pill" class="status-dot online"></span>
-          <span id="backend-version-display" style="color:var(--text-primary); font-weight:700;">v1.0.0 · CPU</span>
+          <span id="backend-version-display" class="pill-value">v1.0.0 · CPU</span>
         </div>
       </div>
     </header>
 
-    <!-- Demo Mode Presets Banner (Crucial for Judges) -->
+    <!-- Scenario Selector Bar -->
     <div class="demo-banner">
       <div class="demo-title">
-        <span>⚡ JUDGE DEMO MODE:</span>
-        <span style="color:var(--text-secondary); font-weight:400;">Select built-in race scenario for instant analysis</span>
+        <span class="demo-title-label">DEMO SCENARIOS</span>
+        <span class="demo-title-sub">Select a pre-computed race scenario for instant analysis</span>
       </div>
       <div class="demo-presets">
-        <button class="preset-btn active" data-scenario="belgian_gp">🇧🇪 Belgian GP (Spa - Flooded)</button>
-        <button class="preset-btn" data-scenario="monaco_gp">🇲🇨 Monaco GP (Drying Line)</button>
-        <button class="preset-btn" data-scenario="silverstone_gp">🇬🇧 Silverstone (Sudden Shower)</button>
-        <button class="preset-btn" data-scenario="monza_gp">🇮🇹 Monza (Dry Evolution)</button>
+        <button class="preset-btn active" data-scenario="belgian_gp">BEL — Spa (Flooded)</button>
+        <button class="preset-btn" data-scenario="monaco_gp">MON — Monaco (Drying Line)</button>
+        <button class="preset-btn" data-scenario="silverstone_gp">GBR — Silverstone (Shower)</button>
+        <button class="preset-btn" data-scenario="monza_gp">ITA — Monza (Dry Evolution)</button>
       </div>
     </div>
 
@@ -83,7 +83,7 @@
             <!-- Grip Gauge Panel -->
             <div class="telemetry-panel" style="height:220px;">
               <div class="panel-header">
-                <span><span class="panel-header-icon">⚡</span> SURFACE FRICTION (μ)</span>
+                <span class="panel-header-label">SURFACE FRICTION COEFFICIENT (μ)</span>
               </div>
               <div class="panel-body grip-gauge-box">
                 <canvas id="grip-gauge-canvas"></canvas>
@@ -93,7 +93,7 @@
             <!-- Sector Risk Map Panel -->
             <div class="telemetry-panel" style="flex:1;">
               <div class="panel-header">
-                <span><span class="panel-header-icon">🗺</span> SECTOR RISK MAP</span>
+                <span class="panel-header-label">SECTOR RISK ASSESSMENT</span>
               </div>
               <div class="panel-body" id="sector-map-container">
                 <!-- SectorMap component injects SVG & sector cards here -->
@@ -106,7 +106,7 @@
             <!-- Track Vision Visualizer Panel -->
             <div class="telemetry-panel" style="position:relative;">
               <div class="panel-header">
-                <span><span class="panel-header-icon">👁</span> VISION PERCEPTION FEED (DINOv2 &amp; SegFormer)</span>
+                <span class="panel-header-label">VISION PERCEPTION FEED — DINOv2 · SegFormer</span>
               </div>
               <div id="track-canvas-container" style="width:100%; height:calc(100% - 36px);">
                 <!-- TrackCanvas component injects multi-layer image viewer -->
@@ -116,7 +116,7 @@
             <!-- Telemetry Timeline Chart Panel -->
             <div class="telemetry-panel">
               <div class="panel-header">
-                <span><span class="panel-header-icon">📈</span> TELEMETRY TIMELINE &amp; TYRE CROSSOVER THRESHOLDS</span>
+                <span class="panel-header-label">WETNESS INDEX &amp; TYRE CROSSOVER THRESHOLDS</span>
               </div>
               <div class="panel-body" style="padding:0;">
                 <canvas id="telemetry-chart-canvas" style="width:100%; height:100%;"></canvas>
@@ -129,7 +129,7 @@
             <!-- Recommendation Panel -->
             <div class="telemetry-panel" style="height:210px;">
               <div class="panel-header">
-                <span><span class="panel-header-icon">🏁</span> TYRE STRATEGY ACTION</span>
+                <span class="panel-header-label">TYRE STRATEGY ACTION</span>
               </div>
               <div class="panel-body" id="recommendation-panel-container">
                 <!-- RecommendationPanel component injects tyre action card -->
@@ -139,7 +139,7 @@
             <!-- AI Rationale & Visual Evidence Panel -->
             <div class="telemetry-panel" style="flex:1;">
               <div class="panel-header">
-                <span><span class="panel-header-icon">🧠</span> RACE ENGINEER AI RATIONALE</span>
+                <span class="panel-header-label">RACE ENGINEER AI RATIONALE</span>
               </div>
               <div class="panel-body" id="ai-explanation-container">
                 <!-- AIExplanation component injects engineer summary -->
@@ -150,22 +150,94 @@
         </div>
       </div>
 
-      <!-- View 2: Upload & Stream -->
-      <div id="view-upload" class="tab-view">
-        <div style="width:100%; max-width:800px; margin:40px auto; display:flex; flex-direction:column; gap:20px;">
-          <div class="telemetry-panel">
+      <!-- View 2: Frame Analysis Upload -->
+      <div id="view-upload" class="tab-view" style="overflow-y:auto;">
+        <div class="upload-view-wrapper">
+
+          <!-- Upload Panel -->
+          <div class="telemetry-panel upload-panel">
             <div class="panel-header">
-              <span>UPLOAD TRACK FRAME FOR ANALYSIS</span>
+              <span class="panel-header-label">FRAME ANALYSIS — UPLOAD TRACK IMAGE</span>
+              <span id="upload-status-badge" class="upload-status-badge idle">READY</span>
             </div>
             <div class="panel-body">
               <div class="dropzone" id="dropzone">
-                <div class="dropzone-icon">📷</div>
-                <div style="font-size:16px; font-weight:700; color:#FFF;">Drag &amp; Drop Track Image or Click to Select</div>
-                <div style="font-size:11px; color:var(--text-secondary);">Supports PNG, JPG, WEBP formats up to 2048px cap.</div>
-                <input type="file" id="file-input" accept="image/*" style="display:none;" />
+                <div class="dropzone-icon-wrap">
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                    <polyline points="17 8 12 3 7 8"/>
+                    <line x1="12" y1="3" x2="12" y2="15"/>
+                  </svg>
+                </div>
+                <div class="dropzone-title">Drag &amp; Drop Track Image or Click to Select</div>
+                <div class="dropzone-sub">Accepts PNG · JPG · WEBP up to 2048px — sent directly to the AI pipeline</div>
+                <div class="dropzone-file-types">
+                  <span class="file-type-tag">PNG</span>
+                  <span class="file-type-tag">JPG</span>
+                  <span class="file-type-tag">WEBP</span>
+                </div>
+                <input type="file" id="file-input" accept="image/png,image/jpeg,image/webp" style="display:none;" />
               </div>
+
+              <!-- Selected file indicator -->
+              <div id="selected-file-indicator" class="selected-file-indicator" style="display:none;">
+                <div class="selected-file-icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                    <circle cx="8.5" cy="8.5" r="1.5"/>
+                    <polyline points="21 15 16 10 5 21"/>
+                  </svg>
+                </div>
+                <div>
+                  <div id="selected-file-name" class="selected-file-name">No file selected</div>
+                  <div id="selected-file-size" class="selected-file-size"></div>
+                </div>
+                <button id="analyze-btn" class="analyze-btn">RUN ANALYSIS</button>
+              </div>
+
+              <!-- Processing indicator -->
+              <div id="upload-progress-bar" class="upload-progress-bar" style="display:none;">
+                <div class="progress-label" id="progress-label">Sending to backend...</div>
+                <div class="progress-track">
+                  <div class="progress-fill animate-scan"></div>
+                </div>
+                <div class="progress-steps">
+                  <span id="step-preprocess" class="progress-step">Image Preprocessing</span>
+                  <span class="progress-step-arrow">›</span>
+                  <span id="step-perception" class="progress-step">DINOv2 · SegFormer · CLIP</span>
+                  <span class="progress-step-arrow">›</span>
+                  <span id="step-classify" class="progress-step">Condition Classification</span>
+                  <span class="progress-step-arrow">›</span>
+                  <span id="step-explain" class="progress-step">Explainability Engine</span>
+                </div>
+              </div>
+
+              <!-- Error display -->
+              <div id="upload-error-box" class="upload-error-box" style="display:none;">
+                <div class="error-label">ANALYSIS ERROR</div>
+                <div id="upload-error-msg" class="error-msg"></div>
+                <button onclick="document.getElementById('upload-error-box').style.display='none';" class="error-dismiss">DISMISS</button>
+              </div>
+
             </div>
           </div>
+
+          <!-- Info Cards Row -->
+          <div class="upload-info-row">
+            <div class="upload-info-card">
+              <div class="upload-info-title">AI PIPELINE</div>
+              <div class="upload-info-text">Your image is processed sequentially through DINOv2 (feature extraction), SegFormer (pixel segmentation), and CLIP (zero-shot validation) before reaching the condition classifier.</div>
+            </div>
+            <div class="upload-info-card">
+              <div class="upload-info-title">OUTPUT</div>
+              <div class="upload-info-text">Results include a track condition label, wetness index, grip coefficient, sector risk breakdown, tyre recommendation, temporal trend analysis, and a VLM-generated engineering rationale.</div>
+            </div>
+            <div class="upload-info-card">
+              <div class="upload-info-title">PERFORMANCE</div>
+              <div class="upload-info-text">CPU-only inference takes approximately 5–15 seconds per frame depending on image resolution and model cache state. GPU inference runs under 2 seconds.</div>
+            </div>
+          </div>
+
         </div>
       </div>
 
@@ -173,7 +245,7 @@
       <div id="view-history" class="tab-view">
         <div class="telemetry-panel" style="width:100%; height:100%;">
           <div class="panel-header">
-            <span>SESSION HISTORY AUDIT LOG</span>
+            <span class="panel-header-label">SESSION HISTORY — ANALYSIS AUDIT LOG</span>
           </div>
           <div class="panel-body" id="history-table-container">
             <!-- SessionHistory component injects table -->
