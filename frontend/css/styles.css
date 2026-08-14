@@ -77,6 +77,11 @@ html, body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Allow text selection inside panels */
+.panel-body, .panel-body * {
+  user-select: text;
+}
+
 /* Scrollbar Styling */
 ::-webkit-scrollbar {
   width: 5px;
@@ -86,10 +91,25 @@ html, body {
   background: var(--bg-primary);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--bg-card);
+  background: var(--bg-hover);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-f1);
+}
+
+/* Slightly more prominent scrollbars inside panels so user knows content scrolls */
+.panel-body::-webkit-scrollbar {
+  width: 4px;
+}
+.panel-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+.panel-body::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.15);
+  border-radius: 4px;
+}
+.panel-body::-webkit-scrollbar-thumb:hover {
   background: var(--accent-f1);
 }
 
@@ -365,6 +385,8 @@ html, body {
   flex-direction: column;
   overflow: hidden;
   box-shadow: var(--shadow-panel);
+  /* Critical: allow flex children to shrink and enable inner scroll */
+  min-height: 0;
 }
 
 .panel-header {
@@ -392,9 +414,12 @@ html, body {
   flex: 1;
   padding: 12px;
   overflow-y: auto;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  /* Critical: must have min-height:0 to enable scroll inside a flex child */
+  min-height: 0;
 }
 
 /* Specific Panel Components */
@@ -403,6 +428,8 @@ html, body {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  min-height: 0;
+  overflow: hidden;
 }
 
 /* Middle Column: Viewport & Telemetry Curve */
@@ -410,6 +437,8 @@ html, body {
   display: grid;
   grid-template-rows: 1fr 220px;
   gap: 12px;
+  min-height: 0;
+  overflow: hidden;
 }
 
 /* Right Column: AI Rationale & Strategy */
@@ -417,6 +446,8 @@ html, body {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  min-height: 0;
+  overflow: hidden;
 }
 
 /* Visualizer Container */
